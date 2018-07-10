@@ -102,6 +102,7 @@ public class ServerOperatorImpl implements IServiceOperator{
 	public void updateNetPort(String rmiPort, String socketPort) {
 		ServerConfig.RMI_PORT=rmiPort;
 		ServerConfig.SERVER_CLIENT_PORT=socketPort;
+		ServerConfigFile.saveServerConfig();
 	}
 
 	@Override
