@@ -8,7 +8,7 @@ public class PageModel<T> implements Serializable{
 	 * 分页数据模型
 	 */
 	private static final long serialVersionUID = -59432160528478346L;
-	public int DEFAULT_PAGESIZE = 5;//默认每页显示条目
+	public static int DEFAULT_PAGESIZE = 5;//默认每页显示条目
 	private int currentPage = 1; //当前页
 	private int pageSize = DEFAULT_PAGESIZE;//每页显示条数
 	private int allCount;//总记录数

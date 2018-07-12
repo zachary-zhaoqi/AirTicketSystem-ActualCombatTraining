@@ -56,9 +56,10 @@ public interface ISystemService extends Remote {
 	/**
 	 * 根据传入的SystemUser对象去更新表中的信息
 	 * @param systemUser
+	 * @return 
 	 * @throws RemoteException
 	 */
-	public void modifySystemUser(SystemUser systemUser) throws RemoteException;
+	public boolean modifySystemUser(SystemUser systemUser) throws RemoteException;
 	
 	
 	/**

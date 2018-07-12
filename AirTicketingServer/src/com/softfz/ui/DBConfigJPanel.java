@@ -145,6 +145,8 @@ public class DBConfigJPanel extends javax.swing.JPanel {
 					checkIsError(CheckUtil.checkIp(ip));
 					checkIsError(CheckUtil.checkPort(port));
 					serverOperatorImpl.updateDbConfig(ip, port, sid, user, password);
+					JOptionPane.showMessageDialog(new JFrame().getContentPane(), 
+							"数据库配置保存成功啦！", "一个很温馨的通知", JOptionPane.INFORMATION_MESSAGE);
 				} catch (Exception e1) {
 					// TODO 自动生成的 catch 块
 					e1.printStackTrace();

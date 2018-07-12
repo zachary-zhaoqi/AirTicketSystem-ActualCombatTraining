@@ -81,22 +81,18 @@ public class PasswordChangePanel extends javax.swing.JPanel {
 		public void actionPerformed(ActionEvent e) {
 			String cmd = e.getActionCommand();
 			if(cmd.equals("确定修改")){
-				if (jTextField_NewPassword1.getText().equals(jTextField_NewPassword2.getText())) {
-					ISystemService systemService=RMIFactory.getService();
-					try {
-						if(systemService.updatePassword(SystemContext.LOGIN_SYSTEMUSER.getUsername(), jTextField_OldPassword.getText(), jTextField_NewPassword1.getText())) {
-							JOptionPane.showMessageDialog(new JFrame().getContentPane(), 
-									"密码修改成功", "一个很温馨的通知", JOptionPane.INFORMATION_MESSAGE); 
-						}else {
-							JOptionPane.showMessageDialog(new JFrame().getContentPane(), 
-									"密码修改失败", "一个令人难过的通知", JOptionPane.INFORMATION_MESSAGE);
-						}
-					} catch (RemoteException e1) {
-						// TODO 自动生成的 catch 块
-						e1.printStackTrace();
-					}
+				String newPassword=jTextField_NewPassword1.getText();
+				try {
+					checkIsError(CheckUtil.checkPwd(jTextField_OldPassword.getText()));
+					checkIsError(CheckUtil.checkPwd(newPassword));
+					checkIsError(CheckUtil.checkTwoPwd(newPassword, jTextField_NewPassword2.getText()));
+					modifyPassword(SystemContext.LOGIN_SYSTEMUSER.getUsername(), jTextField_OldPassword.getText(), newPassword);
+				} catch (Exception e1) {
+					// TODO 自动生成的 catch 块
+					e1.printStackTrace();
+					JOptionPane.showMessageDialog(new JFrame().getContentPane(), 
+							e1.getMessage(), "一个令人难过的通知", JOptionPane.INFORMATION_MESSAGE); 
 				}
-				
 			}else if(cmd.equals("清空输入")){
 				cleanInput();
 			}
@@ -112,7 +108,22 @@ public class PasswordChangePanel extends javax.swing.JPanel {
 	 * @param newPassword
 	 */
 	private void modifyPassword(String username, String oldPassword, String newPassword){
-
+		ISystemService systemService=RMIFactory.getService();
+		try {
+			if(systemService.updatePassword(username,oldPassword,newPassword)) {
+				//更新环境
+				SystemContext.LOGIN_SYSTEMUSER.setPassword(newPassword);
+				JOptionPane.showMessageDialog(new JFrame().getContentPane(), 
+						"密码修改成功", "一个很温馨的通知", JOptionPane.INFORMATION_MESSAGE); 
+			}else {
+				JOptionPane.showMessageDialog(new JFrame().getContentPane(), 
+						"密码修改失败", "一个令人难过的通知", JOptionPane.INFORMATION_MESSAGE);
+			}
+		} catch (RemoteException e1) {
+			// TODO 自动生成的 catch 块
+			e1.printStackTrace();
+		}
+		
 	}
 	
 	/**

@@ -44,7 +44,6 @@ public class SystemServiceImpl extends UnicastRemoteObject implements ISystemSer
 	public Boolean updatePassword(String username, String oldpassword,
 			String password) throws RemoteException {
 		// TODO Auto-generated method stub
-		
 		return systemUserDAO.updateSystemUser(username, oldpassword, password);
 	}
 
@@ -62,16 +61,19 @@ public class SystemServiceImpl extends UnicastRemoteObject implements ISystemSer
 	}
 
 	@Override
-	public void modifySystemUser(SystemUser systemUser) throws RemoteException {
+	public boolean modifySystemUser(SystemUser systemUser) throws RemoteException {
 		// TODO Auto-generated method stub
 		
+		return systemUserDAO.modifySystemUserByJavaBean(systemUser);
 	}
 
 	@Override
 	public PageModel<SystemUser> queryAllSystemUser(String username,
 			int currentPage, int pageSize) throws RemoteException {
 		// TODO Auto-generated method stub
-		return null;
+		
+		PageModel<SystemUser> pageModel=systemUserDAO.querySystemUser(username, currentPage, pageSize);
+		return pageModel;
 	}
 
 	@Override
@@ -107,7 +109,7 @@ public class SystemServiceImpl extends UnicastRemoteObject implements ISystemSer
 	@Override
 	public SystemUser querySystemUser(String username) throws RemoteException {
 		// TODO Auto-generated method stub
-		return null;
+		return systemUserDAO.getSystemUserByUsername(username);
 	}
 
 	@Override
@@ -249,11 +251,12 @@ public class SystemServiceImpl extends UnicastRemoteObject implements ISystemSer
 	public static void main(String[] args) {
 		try {
 			SystemServiceImpl serviceImpl=new SystemServiceImpl();
-			serviceImpl.login("zhaoda", "888888");
+			serviceImpl.queryAllSystemUser("", 1, 5);
 		} catch (RemoteException e) {
 			// TODO 自动生成的 catch 块
 			e.printStackTrace();
 		}
+		
 		
 	}
 	
