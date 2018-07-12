@@ -8,6 +8,7 @@ import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.naming.event.NamespaceChangeListener;
 import javax.swing.BorderFactory;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
@@ -29,6 +30,7 @@ import com.softfz.model.PageModel;
 import com.softfz.model.SystemUser;
 import com.softfz.resources.Resources;
 import com.softfz.service.ISystemService;
+import com.softfz.ui.MessagePanel;
 import com.softfz.ui.table.PageMutiTable;
 import com.softfz.ui.table.PageMutiTableModel;
 import com.softfz.ui.table.PageRadioTable;
@@ -98,13 +100,73 @@ public class SaleNetListPanel extends javax.swing.JPanel {
 		public void actionPerformed(ActionEvent e) {
 			String cmd = e.getActionCommand();
 			if(cmd.equals("查询")){
-
+				tableModel.doPageQuery(1, PageModel.DEFAULT_PAGESIZE);
+				mutiTable.reflashTable();
 			}else if(cmd.equals("重置密码")){
-
+				List<NetDealer> list=tableModel.getCheckValue();
+				if (list.size() != 0) {
+					ISystemService systemService=RMIFactory.getService();
+					if (systemService!=null) {
+						for (NetDealer netDealer : list) {
+							try {
+								systemService.resetNetPassword(netDealer.getNetid(),netDealer.getPassword());
+								JOptionPane.showMessageDialog(new JFrame().getContentPane(), 
+										netDealer.getNetcode()+"密码重置成功", "一个温馨的通知", JOptionPane.INFORMATION_MESSAGE);
+							} catch (RemoteException e1) {
+								// TODO 自动生成的 catch 块
+								e1.printStackTrace();
+								JOptionPane.showMessageDialog(new JFrame().getContentPane(), 
+										"重置网点密码失败", "一个令人难过的通知", JOptionPane.INFORMATION_MESSAGE);
+							}catch (Exception e2) {
+								// TODO: handle exception
+								JOptionPane.showMessageDialog(new JFrame().getContentPane(), 
+										e2.getMessage(), "一个令人难过的通知", JOptionPane.INFORMATION_MESSAGE);
+							}
+						}
+					}
+				}
 			}else if(cmd.equals("冻结网点")){
-				
+				List<NetDealer> list = tableModel.getCheckValue();
+				if(list.size() != 0){
+					ISystemService systemService = RMIFactory.getService();
+					if(systemService != null){
+						for (NetDealer netDealer : list) {
+							try {
+								systemService.lockNet(netDealer.getNetid());
+								netDealer.setState("1");
+							} catch (RemoteException e1) {
+								// TODO 自动生成的 catch 块
+								e1.printStackTrace();
+								JOptionPane.showMessageDialog(new JFrame().getContentPane(), 
+										"不小心失败了呢，可能远程服务器被关闭了哦~", "一个令人难过的通知", JOptionPane.INFORMATION_MESSAGE); 
+							}
+						}
+						mutiTable.reflashTable();
+					}
+				}else{
+					JOptionPane.showMessageDialog(null, "没有选中账户");
+				}
 			}else if(cmd.equals("解冻网点")){
-				
+				List<NetDealer> list = tableModel.getCheckValue();
+				if(list.size() != 0){
+					ISystemService systemService = RMIFactory.getService();
+					if(systemService != null){
+						for (NetDealer netDealer : list) {
+							try {
+								systemService.unlockNet(netDealer.getNetid());
+								netDealer.setState("0");
+							} catch (RemoteException e1) {
+								// TODO 自动生成的 catch 块
+								e1.printStackTrace();
+								JOptionPane.showMessageDialog(new JFrame().getContentPane(), 
+										"不小心失败了呢，可能远程服务器被关闭了哦~", "一个令人难过的通知", JOptionPane.INFORMATION_MESSAGE); 
+							}
+						}
+						mutiTable.reflashTable();
+					}
+				}else{
+					JOptionPane.showMessageDialog(null, "没有选中账户");
+				}
 			}else{
 					JOptionPane.showMessageDialog(null, "没有选中需要解冻的销售网点");
 				}

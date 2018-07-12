@@ -1,5 +1,6 @@
 package com.softfz.service;
 
+import java.nio.channels.NonWritableChannelException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.List;
@@ -19,9 +20,11 @@ import com.softfz.model.SystemUser;
 
 public class SystemServiceImpl extends UnicastRemoteObject implements ISystemService {
 	private SystemUserDAO systemUserDAO;
+	private NetDealerDAO netDealerDAO;
 	
 	public SystemServiceImpl() throws RemoteException {
 		systemUserDAO = new SystemUserDAO();
+		netDealerDAO=new NetDealerDAO();
 	}
 	
 	@Override
@@ -116,7 +119,8 @@ public class SystemServiceImpl extends UnicastRemoteObject implements ISystemSer
 	public PageModel<NetDealer> queryAllDealer(String netcode, String netname,
 			int currentPage, int pageSize) throws RemoteException {
 		// TODO Auto-generated method stub
-		return null;
+		PageModel<NetDealer> pageModel=netDealerDAO.querNetDealer(netcode,netname,currentPage,pageSize);
+		return pageModel;
 	}
 
 	@Override
@@ -136,21 +140,24 @@ public class SystemServiceImpl extends UnicastRemoteObject implements ISystemSer
 
 	@Override
 	public void resetNetPassword(int netid, String passwordOld)
-			throws RemoteException {
+			throws Exception {
 		// TODO Auto-generated method stub
+		NetDealerDAO netDealerDAO=new NetDealerDAO();
+		netDealerDAO.resetNetPassword(netid,passwordOld,"123456");
 		
 	}
 
 	@Override
 	public void lockNet(int netid) throws RemoteException {
 		// TODO Auto-generated method stub
+		netDealerDAO.lockNet(netid);
 		
 	}
 
 	@Override
 	public void unlockNet(int netid) throws RemoteException {
 		// TODO Auto-generated method stub
-		
+		netDealerDAO.unlockNet(netid);
 	}
 
 	@Override
@@ -248,15 +255,9 @@ public class SystemServiceImpl extends UnicastRemoteObject implements ISystemSer
 		return null;
 	}
 
-	public static void main(String[] args) {
-		try {
-			SystemServiceImpl serviceImpl=new SystemServiceImpl();
-			serviceImpl.queryAllSystemUser("", 1, 5);
-		} catch (RemoteException e) {
-			// TODO 自动生成的 catch 块
-			e.printStackTrace();
-		}
-		
+	@Override
+	public void lockSystemUser(List<Integer> userids) throws RemoteException {
+		// TODO 自动生成的方法存根
 		
 	}
 	

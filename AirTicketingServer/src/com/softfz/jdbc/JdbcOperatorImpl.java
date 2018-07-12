@@ -112,7 +112,29 @@ public class JdbcOperatorImpl implements JdbcOperator{
 	@Override
 	public int update(String sql, Object... params) {
 		// TODO Auto-generated method stub
-		return 0;
+		Connection conn = null;
+		PreparedStatement preparedStatement=null;
+		int result=-1;
+		try {
+			conn = ConnectionHandler.getConnection(dataSource);
+			//完成查询并返回查询结果的数据
+			if (conn!=null) {
+				preparedStatement=conn.prepareStatement(sql);
+				for (int i = 0; i < params.length; i++) {
+					preparedStatement.setObject(i+1, params[i]);
+				}
+				result=preparedStatement.executeUpdate();
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new RuntimeException(e.getMessage());
+		} finally{
+			if(conn != null){
+				ConnectionHandler.closeConn(conn);
+				return result;
+			}
+		}
+		return result;
 	}
 	@Override
 	public int update(String sql, List list) {

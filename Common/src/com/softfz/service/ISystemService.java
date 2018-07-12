@@ -80,11 +80,11 @@ public interface ISystemService extends Remote {
 	public void resetPassword(List<Integer> userids) throws RemoteException;
 	
 	
-//	/**
-//	 * 冻结管理员帐号
-//	 * @param userids
-//	 */
-//	public void lockSystemUser(List<Integer> userids) throws RemoteException;
+	/**
+	 * 冻结管理员帐号
+	 * @param userids
+	 */
+	public void lockSystemUser(List<Integer> userids) throws RemoteException;
 	
 	/**
 	 * 检查管理员账号是否被冻结（被冻结就抛出被冻结的异常）
@@ -148,8 +148,9 @@ public interface ISystemService extends Remote {
 	/**
 	 * 重置销售网点的密码为123456
 	 * @param netids
+	 * @throws RemoteException,Exception 
 	 */
-	public void resetNetPassword(int netid, String passwordOld) throws RemoteException;
+	public void resetNetPassword(int netid, String passwordOld) throws RemoteException, RemoteException,Exception;
 //	public void resetNetPassword(List<Integer> netids) throws RemoteException;
 	
 	
