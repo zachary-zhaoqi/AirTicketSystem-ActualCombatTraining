@@ -94,11 +94,13 @@ public class ServerPortJPanel extends javax.swing.JPanel {
 		//2）ServerOperatorImpl.updateNetPort(String rmiPort, String socketPort) 
 		//---a)修改ServerConfig类中对应的变量做更新！
 		//---b)调用ServerConfigFile.saveServerConfig()
-		if(ServerOperatorImpl.getRegistry()!=null) {
+		if(ServerOperatorImpl.getRegistry()==null) {
 			try {
 				checkIsError(CheckUtil.checkPort(RMI_PORT));
 				checkIsError(CheckUtil.checkPort(SERVER_CLIENT_PORT));
 				serverOperatorImpl.updateNetPort(RMI_PORT, SERVER_CLIENT_PORT);
+				JOptionPane.showMessageDialog(new JFrame().getContentPane(), 
+						"RMI配置保存成功啦！", "一个很温馨的通知", JOptionPane.INFORMATION_MESSAGE);
 			} catch (Exception e1) {
 				// TODO 自动生成的 catch 块
 				e1.printStackTrace();

@@ -1,5 +1,8 @@
 package com.softfz.dao;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.sql.DataSource;
 
 import com.softfz.config.DataSourceConfig;
@@ -43,9 +46,6 @@ public class SystemUserDAO {
 	 * @return
 	 */
 	public SystemUser getSystemUserByUsername(String username,String password){
-		if (username==null||username==""||username.length()==0) {
-			return null;
-		}
 		SystemUser systemUser=null;
 		String sql="SELECT * FROM airticket.systemuser where username=? and password=?";
 		systemUser=(SystemUser) jdbcOperator.queryForJavaBean(sql,SystemUser.class,username,password);
@@ -59,9 +59,6 @@ public class SystemUserDAO {
 	 * @param passwordNew
 	 */
 	public boolean updateSystemUser(String username, String passwordOld, String passwordNew){
-		if (username==null||username==""||username.length()==0) {
-			return false;
-		}
 		String sql="SELECT * FROM airticket.systemuser where username=? and password=?";
 		SystemUser systemUser=(SystemUser) jdbcOperator.queryForJavaBean(sql,SystemUser.class,username,passwordOld);
 		if (systemUser==null) {
@@ -98,11 +95,20 @@ public class SystemUserDAO {
 	 * 修改管理员
 	 * @param systemUser
 	 */
-	public void modifySystemUserByJavaBean(SystemUser systemUser){
+	public boolean modifySystemUserByJavaBean(SystemUser systemUser){
 		//构造插入语句
 		//封装参数到List中
 		//调用JDBC更新之
 		//jdbcOperator.update(sql,parameterList);
+		String sql="UPDATE airticket.systemuser SET username=?,password=?,email=?,state=?,realname=?,telephone=? where userid=?;";
+		int result=jdbcOperator.queryForInt(sql, systemUser.getUsername(),systemUser.getPassword(),
+				systemUser.getEmail(),systemUser.getState(),systemUser.getRealname(),
+				systemUser.getTelephone(),systemUser.getUserid());
+		if (result>0) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 	
 	/**
@@ -122,9 +128,32 @@ public class SystemUserDAO {
 	 */
 	public PageModel<SystemUser> querySystemUser(String username,
 			int currentPage, int pageSize){		
-		return null;
+		String sql;
+		List<SystemUser> list;
+		if (username==null||username.length()==0||username=="") {
+			sql="SELECT * FROM airticket.systemuser;";
+			list=jdbcOperator.queryForJavaBeanList(sql, SystemUser.class);
+		}else {
+			sql="SELECT * FROM airticket.systemuser where username=?;";
+			list=jdbcOperator.queryForJavaBeanList(sql, SystemUser.class,username);
+		}
+		
+		PageModel<SystemUser> pageModel=new PageModel<SystemUser>();
+		pageModel.setAllCount(list.size());
+		pageModel.setCurrentPage(currentPage);
+		pageModel.setPageSize(pageSize);
+		List<SystemUser> systemUsers=new ArrayList<SystemUser>();
+		for(int i=1+(currentPage-1)*pageSize;i<=pageSize+(currentPage-1)*pageSize;i++){
+			if (list.size()<i) {
+				break;
+			}
+			SystemUser systemUser=list.get(i-1);
+			systemUsers.add(systemUser);
+		}
+		pageModel.setResult(systemUsers);
+		return pageModel;
 	}
-	
+
 	public static void main(String[] args) {
 		SystemUserDAO systemUserDAO=new SystemUserDAO();
 		systemUserDAO.updateSystemUser("zhaoda", "888888", "999999");

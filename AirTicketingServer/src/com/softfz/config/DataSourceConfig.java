@@ -71,6 +71,7 @@ public class DataSourceConfig {
 		}
 		dataSource=new ComboPooledDataSource();
 		try {
+			//≈‰÷√¡¨Ω”≥ÿ Ù–‘
 			((ComboPooledDataSource) dataSource).setDriverClass("com.mysql.cj.jdbc.Driver");
 			((ComboPooledDataSource) dataSource).setJdbcUrl("jdbc:"+sid+"://"+ip+":"+port+"/airticket?characterEncoding=utf-8&serverTimezone=GMT&useSSL=false");
 			((ComboPooledDataSource) dataSource).setUser(user);

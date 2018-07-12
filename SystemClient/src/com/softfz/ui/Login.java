@@ -131,20 +131,38 @@ public class Login extends javax.swing.JFrame {
 					}
 				}
 				
-				if(jButtonPress == jButton_Login){//按下登陆按钮
-					//校验用户名密码。。。
+				if(jButtonPress == jButton_Login){
+					//按下登陆按钮
+					
+					//校验用户名密码
+					String username=jTextField_Name.getText();
+					String password= jPasswordField.getText();
+					try {
+						checkIsError(CheckUtil.checkSysUsername(username));
+						checkIsError(CheckUtil.checkPwd(password));
+					} catch (Exception e2) {
+						// TODO 自动生成的 catch 块
+						e2.printStackTrace();
+						JOptionPane.showMessageDialog(new JFrame().getContentPane(), 
+								e2.getMessage(), "一个令人难过的通知", JOptionPane.INFORMATION_MESSAGE); 
+						return;
+					}
+					//获取管理员对象
 					SystemUser systemUser=null;
 					ISystemService systemService=RMIFactory.getService();
 					try {
-						systemUser=systemService.login(jTextField_Name.getText(), jPasswordField.getText());
+						systemUser=systemService.login(username, password);
 					} catch (RemoteException e1) {
 						// TODO Auto-generated catch block
+						JOptionPane.showMessageDialog(new JFrame().getContentPane(), 
+								"可能是远程服务器未开启，请联系服务器管理员！", "一个令人难过的通知", JOptionPane.INFORMATION_MESSAGE); 
 						e1.printStackTrace();
 					}
+					
 					if (systemUser != null) {
 						//保存当前登陆的系统管理端对象
 						SystemContext.LOGIN_SYSTEMUSER = systemUser;					
-										
+								
 						backManager = new BackManagerFrame();
 						backManager.setLocationRelativeTo(null);
 						//显示出加载界面
@@ -165,11 +183,26 @@ public class Login extends javax.swing.JFrame {
 						JOptionPane.showMessageDialog(new JFrame().getContentPane(), 
 								"密码错误", "一个令人难过的通知", JOptionPane.INFORMATION_MESSAGE); 
 					}
-				}else if(jButtonPress == jButton_Save){//按下保存按钮
-					ServerConfig.RMI_IP=jTextField_Ip.getText();
-					ServerConfig.RMI_PORT=jTextField_Port.getText();
-					ServerConfigFile.saveServerConfig();
-				}else if(jButtonPress == jButton_Cancel){//按下取消按钮
+				}else if(jButtonPress == jButton_Save){
+					//按下保存按钮
+					String RMI_IP=jTextField_Ip.getText();
+					String RMI_PORT=jTextField_Port.getText();	
+					try {
+						checkIsError(CheckUtil.checkIp(RMI_IP));
+						checkIsError(CheckUtil.checkPort(RMI_PORT));
+						ServerConfig.RMI_IP=RMI_IP;
+						ServerConfig.RMI_PORT=RMI_PORT;
+						ServerConfigFile.saveServerConfig();
+						JOptionPane.showMessageDialog(new JFrame().getContentPane(), 
+								"RMI配置保存成功啦！", "一个很温馨的通知", JOptionPane.INFORMATION_MESSAGE);
+					} catch (Exception e1) {
+						// TODO 自动生成的 catch 块
+						e1.printStackTrace();
+						JOptionPane.showMessageDialog(new JFrame().getContentPane(), 
+								e1.getMessage(), "一个令人难过的通知", JOptionPane.INFORMATION_MESSAGE); 
+					}
+				}else if(jButtonPress == jButton_Cancel){
+					//按下取消按钮
 					int exitFlag = JOptionPane.showConfirmDialog(Login.this, "确认退出 ？", "退出确认", JOptionPane.YES_NO_OPTION);
 					if(exitFlag == 0){
 						System.exit(0);
