@@ -4,6 +4,7 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.rmi.RemoteException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 
@@ -29,6 +30,7 @@ import com.softfz.RMIFactory;
 import com.softfz.model.BounceRecord;
 import com.softfz.model.Flight;
 import com.softfz.model.SaleRecord;
+import com.softfz.model.TicketStore;
 import com.softfz.resources.Resources;
 import com.softfz.service.INetService;
 import com.softfz.ui.panel.ReturnTicket.ButtonListener;
@@ -70,7 +72,7 @@ public class SignChange extends javax.swing.JPanel {
 	private int errorNoticeInt;
 	private Boolean returnFlag = false;
 	private HashMap<String, String> errorMap = new HashMap<String, String>();
-
+	private SaleRecord saleRecord;
 	
 	public static void main(String[] args) {
 		JFrame frame = new JFrame();
@@ -100,7 +102,36 @@ public class SignChange extends javax.swing.JPanel {
 	
 	
 	public void buildTable(SaleRecord saleRecord){
-
+		
+		Flight flight = new Flight();
+		INetService netService = RMIFactory.getService();
+		try {
+			flight = netService.queryFlights(saleRecord.getFlightid());
+		} catch (RemoteException e) {
+			e.printStackTrace();
+		}
+		String flightNo = flight.getFlightno();
+		
+		String[][] data = new String[1][7];
+		String[] ticketdata = new String[7];
+		ticketdata[0] = flightNo;
+		ticketdata[1] = "<html>" + saleRecord.getStartairport() + "<br>" + saleRecord.getEndairpotr() + "</html>";
+		
+		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		String start = (String)formatter.format(saleRecord.getStarttime());
+		String end = (String)formatter.format(saleRecord.getArrtime());
+		ticketdata[2] = "<html>" + start + "<br>" + end + "</html>";
+		ticketdata[3] = String.valueOf(saleRecord.getTicketmoney());
+		ticketdata[4] = String.valueOf(saleRecord.getOiltax());
+		ticketdata[5] = String.valueOf(saleRecord.getAirporttax());
+		ticketdata[6] = String.valueOf(saleRecord.getTicketmoney() + saleRecord.getOiltax() + saleRecord.getAirporttax());
+	
+		data[0] = ticketdata;
+		tableModel.setDataVector(data,header);
+		table.repaint();
+		setSuitableColumn(table);//设置列宽以匹配显示
+		this.saleRecord=saleRecord;
+		
 	}
 	
 	private void cleanAllInput(){
@@ -122,12 +153,45 @@ public class SignChange extends javax.swing.JPanel {
 		public void actionPerformed(ActionEvent e) {
 			String cmd = e.getActionCommand();
 			if(cmd.equals("查询")){
+				String id=jTextField_IdCard.getText().trim();
+				String fromcity=jTextField_FromCity.getText().trim();
+				String tocity=jTextField_ToCity.getText().trim();
+				Date date=(Date) datePicker.getValue();
+				java.sql.Date sqlDate = new java.sql.Date(date.getTime());
+				checkIsError(CheckUtil.checkIdCard(id));
 				
+				if (returnFlag) {
+					INetService netService=RMIFactory.getService();
+					if (netService!=null) {
+						try {
+							buildTable(netService.getSaleRecord(NetContext.LOGIN_NETDEALER.getNetid(), fromcity, tocity, id, sqlDate));
+						} catch (RemoteException e1) {
+							// TODO 自动生成的 catch 块
+							e1.printStackTrace();
+							JOptionPane.showMessageDialog(null, e1.getMessage());
+						}
+					}
+				}
+				jButton_OK.setEnabled(true);
 				
 			}else if(cmd.equals("确认转签")){
-								
-			}if(cmd.equals("取消")){
+				INetService netService=RMIFactory.getService();
+				if (netService!=null) {
+					try {
+						String result=netService.changeTicketDate(saleRecord.getSaleid(), (Date) dateChangePicker.getValue());
+						JOptionPane.showMessageDialog(null, result);
+						cleanAllInput();
+					} catch (RemoteException e1) {
+						// TODO 自动生成的 catch 块
+						e1.printStackTrace();
+						JOptionPane.showMessageDialog(null, e1.getMessage());
+					}
+				}
+			
 				
+				
+			}if(cmd.equals("取消")){
+				cleanAllInput();
 			}
 			
 		}
@@ -272,6 +336,8 @@ public class SignChange extends javax.swing.JPanel {
 		String errorNoticeString = CheckUtil.getMapNoticeInfo(inputTextInt);
 		if(!errorNoticeString.equals("OK")){
 			JOptionPane.showMessageDialog(SignChange.this, errorNoticeString);
+			returnFlag = false;
+		}else {
 			returnFlag = true;
 		}
 	}

@@ -3,6 +3,7 @@ package com.softfz.ui.panel;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.rmi.RemoteException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 
@@ -19,6 +20,7 @@ import javax.swing.JTextField;
 import com.softfz.NetContext;
 import com.softfz.RMIFactory;
 import com.softfz.model.Flight;
+import com.softfz.model.FlightSaleTotal;
 import com.softfz.model.PageModel;
 import com.softfz.model.SaleTotal;
 import com.softfz.resources.Resources;
@@ -88,7 +90,8 @@ public class SalesCount extends javax.swing.JPanel {
 		public void actionPerformed(ActionEvent e) {
 			String cmd = e.getActionCommand();
 			if(cmd.equals("查询")){
-				
+				tableModel.doPageQuery(1, PageModel.DEFAULT_PAGESIZE);
+				pageTable.reflashTable();
 			}
 		}
 	}
@@ -143,7 +146,19 @@ public class SalesCount extends javax.swing.JPanel {
 			 其中分页按钮已经实现了内部调用无需关联，
 			 在界面的查询按钮中需要监听点击方法调用本方法*/
 			// 该方法具体实现只需要调用远程服务器中的业务方法即可。
-			
+			INetService netService=RMIFactory.getService();
+			if (netService!=null) {
+				String saleMonth=jTextField_SaleMonth.getText().trim();
+				String flightNO=jTextField_FlightID.getText().trim();
+				
+				try {
+					PageModel<SaleTotal> pageModel=netService.queryMonthSale(NetContext.LOGIN_NETDEALER.getNetid(), saleMonth, flightNO, currentPage, pageSize);
+					super.setPageModel(pageModel);
+				} catch (RemoteException e) {
+					// TODO 自动生成的 catch 块
+					e.printStackTrace();
+				}
+			}
 			
 			
 		}

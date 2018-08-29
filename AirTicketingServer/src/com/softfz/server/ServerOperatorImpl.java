@@ -38,6 +38,8 @@ public class ServerOperatorImpl implements IServiceOperator{
 		} catch (IOException e) {
 			// TODO 自动生成的 catch 块
 			e.printStackTrace();
+			JOptionPane.showMessageDialog(new JFrame().getContentPane(), 
+					"服务已经在运行了！", "一个令人难过的通知", JOptionPane.INFORMATION_MESSAGE); 
 		}
 	}
 	
@@ -102,6 +104,7 @@ public class ServerOperatorImpl implements IServiceOperator{
 	public void updateNetPort(String rmiPort, String socketPort) {
 		ServerConfig.RMI_PORT=rmiPort;
 		ServerConfig.SERVER_CLIENT_PORT=socketPort;
+		ServerConfigFile.saveServerConfig();
 	}
 
 	@Override

@@ -6,6 +6,7 @@ import java.awt.event.ActionListener;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 import javax.swing.WindowConstants;
 
@@ -32,6 +33,7 @@ public class ServerPortJPanel extends javax.swing.JPanel {
 	private JTextField jTextField2;
 	private JTextField jTextField1;
 	private int errorNum;
+	IServiceOperator serverOperatorImpl;
 
 	/**
 	 * Auto-generated main method to display this JPanel inside a new JFrame.
@@ -46,6 +48,7 @@ public class ServerPortJPanel extends javax.swing.JPanel {
 
 	public ServerPortJPanel() {
 		super();
+		serverOperatorImpl=ServerOperatorImpl.getInstance();
 		initGUI(); //界面初始化
 		listener();  //事件监听
 		initData(); //数据初始化
@@ -85,7 +88,27 @@ public class ServerPortJPanel extends javax.swing.JPanel {
 	 * @param SERVER_CLIENT_PORT
 	 */
 	private void savePort(String RMI_PORT, String SERVER_CLIENT_PORT) {
-
+		//TODO：
+		//先判断是否允许修改端口（服务运行中不允许）
+		//1)获取文本框的数据 : jTextField1.getText();  --校验
+		//2）ServerOperatorImpl.updateNetPort(String rmiPort, String socketPort) 
+		//---a)修改ServerConfig类中对应的变量做更新！
+		//---b)调用ServerConfigFile.saveServerConfig()
+		if(ServerOperatorImpl.getRegistry()==null) {
+			try {
+				checkIsError(CheckUtil.checkPort(RMI_PORT));
+				checkIsError(CheckUtil.checkPort(SERVER_CLIENT_PORT));
+				serverOperatorImpl.updateNetPort(RMI_PORT, SERVER_CLIENT_PORT);
+				JOptionPane.showMessageDialog(new JFrame().getContentPane(), 
+						"RMI配置保存成功啦！", "一个很温馨的通知", JOptionPane.INFORMATION_MESSAGE);
+			} catch (Exception e1) {
+				// TODO 自动生成的 catch 块
+				e1.printStackTrace();
+			}
+		}else {
+			JOptionPane.showMessageDialog(new JFrame().getContentPane(), 
+					"服务正在运行哦，不可以修改端口呢~", "一个很温馨的通知", JOptionPane.INFORMATION_MESSAGE); 
+		}
 	}
 
 	class ButtonListener implements ActionListener {
@@ -94,13 +117,7 @@ public class ServerPortJPanel extends javax.swing.JPanel {
 		public void actionPerformed(ActionEvent e) {
 			String cmd = e.getActionCommand();
 			if (cmd.equals("保存配置")) { //点击保存配置按钮
-				//TODO：
-				//先判断是否允许修改端口（服务运行中不允许）
-				//1)获取文本框的数据 : jTextField1.getText();  --校验
-				//2）ServerOperatorImpl.updateNetPort(String rmiPort, String socketPort) 
-				//---a)修改ServerConfig类中对应的变量做更新！
-				//---b)调用ServerConfigFile.saveServerConfig()
-				
+				savePort(jTextField1.getText(), jTextField2.getText());
 			}
 
 		}

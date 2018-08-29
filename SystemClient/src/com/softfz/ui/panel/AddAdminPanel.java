@@ -92,19 +92,25 @@ public class AddAdminPanel extends javax.swing.JPanel {
 		public void actionPerformed(ActionEvent e) {
 			String cmd = e.getActionCommand();
 			if (cmd.equals("保存")) {
-				ISystemService service=RMIFactory.getService();
+				String name=jTextField_Name.getText();
+				String password=jTextField_Password.getText();
+				String email=jTextField_Email.getText();
+				String realname=jTextField_RealName.getText();
+				String telephone=jTextField_Telephone.getText();
 				try {
-					if(service.addSystemUser(jTextField_Name.getText(), jTextField_Password.getText(), jTextField_Email.getText(), jTextField_RealName.getText(), jTextField_Telephone.getText())) {
-						JOptionPane.showMessageDialog(new JFrame().getContentPane(), 
-								"新增管理员成功", "一个很温馨的通知", JOptionPane.INFORMATION_MESSAGE); 
-					}else {
-						JOptionPane.showMessageDialog(new JFrame().getContentPane(), 
-								"新增管理员失败", "一个很温馨的通知", JOptionPane.INFORMATION_MESSAGE);
-					}
-				} catch (RemoteException e1) {
+					checkIsError(CheckUtil.checkSysUsername(name));
+					checkIsError(CheckUtil.checkPwd(password));
+					checkIsError(CheckUtil.checkEmail(email));
+					checkIsError(CheckUtil.checkPhoneNumber(telephone));
+					addNewUser(name, password, email, realname, telephone);
+				} catch (Exception e1) {
 					// TODO 自动生成的 catch 块
 					e1.printStackTrace();
+					JOptionPane.showMessageDialog(new JFrame().getContentPane(), 
+							e1.getMessage(), "一个令人难过的通知", JOptionPane.INFORMATION_MESSAGE); 
 				}
+				
+				
 			}else if (cmd.equals("取消")) {
 				jTextField_Name.setText("");
 				jTextField_Password.setText("");
@@ -117,7 +123,21 @@ public class AddAdminPanel extends javax.swing.JPanel {
 	
 	
 	private void addNewUser(String name, String password, String email, String realname, String telephone){
-
+		ISystemService service=RMIFactory.getService();
+		try {
+			if(service.addSystemUser(name, password, email, realname, telephone)) {
+				JOptionPane.showMessageDialog(new JFrame().getContentPane(), 
+						"新增管理员成功", "一个很温馨的通知", JOptionPane.INFORMATION_MESSAGE); 
+			}else {
+				JOptionPane.showMessageDialog(new JFrame().getContentPane(), 
+						"新增管理员失败", "一个很温馨的通知", JOptionPane.INFORMATION_MESSAGE);
+			}
+		} catch (RemoteException e1) {
+			// TODO 自动生成的 catch 块
+			e1.printStackTrace();
+			JOptionPane.showMessageDialog(new JFrame().getContentPane(), 
+					e1.getMessage(), "一个令人难过的通知", JOptionPane.INFORMATION_MESSAGE); 
+		}
 	}
 	
 	private void initGUI() {

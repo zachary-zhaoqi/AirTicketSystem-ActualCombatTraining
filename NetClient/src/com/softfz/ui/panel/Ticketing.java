@@ -3,6 +3,9 @@ package com.softfz.ui.panel;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.rmi.RemoteException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
@@ -111,7 +114,7 @@ public class Ticketing extends javax.swing.JPanel {
 		String end = planDate.toString() + " " + flight.getPlanendtime();
 		flightdata[2] = "<html>" + begin + "<br>" + end + "</html>";
 		flightdata[3] = "<html>" + flight.getFlighttype() + "/" 
-				+ (flight.getType()==0?"无经停":"经停") + "</html>" ;
+				+ (flight.getIsstop()==0?"无经停":"经停") + "</html>" ;
 		flightdata[4] = "" + (int)(flight.getPrice() * flight.getDiscount());
 		
 		if(flight.getAirrange() >= NetContext.OIL_TAX.getBreakpoint()){
@@ -147,8 +150,9 @@ public class Ticketing extends javax.swing.JPanel {
 		jTextField_Tel.setText("");
 		jTextField_ID.setText("");
 		if(isReturnToFlightInfo){
-			tableModel.setRowCount(0);
-			center.goFlightInfo();
+//			tableModel.setRowCount(0);
+//			center.goFlightInfo();
+			//todo:关闭当前窗口
 		}
 	}
 	
@@ -158,16 +162,85 @@ public class Ticketing extends javax.swing.JPanel {
 		public void actionPerformed(ActionEvent e) {
 			String cmd = e.getActionCommand();
 			if(cmd.equals("确定订票")){
-
-			}else if(cmd.equals("取消订票")){
+				String name=jTextField_Name.getText().trim();
+				String tell=jTextField_Tel.getText().trim();
+				String id=jTextField_ID.getText().trim();
 				
+				try {
+					checkIsError(CheckUtil.checkName(name));
+					checkIsError(CheckUtil.checkIdCard(id));
+					checkIsError(CheckUtil.checkPhoneNumber(tell));
+					
+					ticketing(name, tell, id);
+				} catch (Exception e1) {
+					// TODO 自动生成的 catch 块
+					e1.printStackTrace();
+					JOptionPane.showMessageDialog(null, e1.getMessage());
+				}
+				
+			}else if(cmd.equals("取消订票")){
+				cleanAllInput(true);
 			}
 		}
 		
 	}
 	
 	private void ticketing(String name, String tel, String ID){
-
+		INetService netService=RMIFactory.getService();
+		SaleRecord saleRecord1=null;
+		if (netService!=null) {
+			try {
+				saleRecord1 = netService.queryRecordForTicket(ID);
+			} catch (RemoteException e1) {
+				// TODO 自动生成的 catch 块
+				e1.printStackTrace();
+				JOptionPane.showMessageDialog(null, "远程服务器可能未开启。错误："+e1.getMessage());
+			}
+			if (saleRecord1!=null) {
+				JOptionPane.showMessageDialog(null, "该身份证不可再订票\n记录：\n"+saleRecord1.toString());
+			}else{
+				SaleRecord saleRecord=new SaleRecord();
+				saleRecord.setNetid(NetContext.LOGIN_NETDEALER.getNetid());
+				saleRecord.setFlightid(flight.getFlightid());
+				saleRecord.setTicketmoney(Integer.parseInt((String) tableModel.getValueAt(0, 4)));
+				saleRecord.setAirporttax(Integer.parseInt((String) tableModel.getValueAt(0, 6)));
+				saleRecord.setOiltax(Integer.parseInt((String) tableModel.getValueAt(0, 5)));
+				saleRecord.setCustname(name);
+				saleRecord.setCusttel(tel);
+				saleRecord.setIdcard(ID);
+				saleRecord.setStartairport(flight.getStartairport());
+				saleRecord.setEndairpotr(flight.getEndairport());
+				saleRecord.setStoreid(flight.getStoreid());
+				SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+				Date starttime;
+				try {
+					starttime = sdf.parse(planDate.toString() + " " + flight.getPlanstarttime());
+					Date endtime=sdf.parse(planDate.toString() + " " + flight.getPlanendtime());
+					saleRecord.setStarttime(starttime);
+					saleRecord.setArrtime(endtime);
+					saleRecord.setSalestate("0");
+					String result=netService.saleTicket(saleRecord);
+					if (result.equals("OK")) {
+						cleanAllInput(true);
+						JOptionPane.showMessageDialog(null, "订票成功");
+					}else {
+						JOptionPane.showMessageDialog(null, "出错了，请重试！");
+					}
+					
+				} catch (ParseException e) {
+					// TODO 自动生成的 catch 块
+					e.printStackTrace();
+					JOptionPane.showMessageDialog(null, e.getMessage());
+				} catch (RemoteException e) {
+					// TODO 自动生成的 catch 块
+					e.printStackTrace();
+					JOptionPane.showMessageDialog(null,e.getMessage());
+					
+					
+				}
+			}
+		}
+		
 	}
 	
 	private void initGUI() {

@@ -29,6 +29,7 @@ public class Flight implements Serializable{
 	private String airname;//所属航空公司名称
 	private double discount;//折扣率
 	private int storenum;//剩余票数
+	private int storeid;//绑定的票id
 	
 	public int getFlightid() {
 		return flightid;
@@ -143,6 +144,12 @@ public class Flight implements Serializable{
 	}
 	public void setStorenum(int storenum) {
 		this.storenum = storenum;
+	}
+	public int getStoreid() {
+		return storeid;
+	}
+	public void setStoreid(int storeid) {
+		this.storeid = storeid;
 	}
 	
 	

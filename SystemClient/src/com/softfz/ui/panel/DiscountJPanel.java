@@ -3,6 +3,7 @@ package com.softfz.ui.panel;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.rmi.RemoteException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import javax.swing.BorderFactory;
@@ -26,6 +27,7 @@ import com.softfz.resources.Resources;
 import com.softfz.service.ISystemService;
 import com.softfz.ui.table.PageTable;
 import com.softfz.ui.table.PageTableModel;
+import com.softfz.utils.CheckUtil;
 import com.softfz.utils.DateUtil;
 
 /**
@@ -63,6 +65,7 @@ public class DiscountJPanel extends javax.swing.JPanel {
 	private PageTable pageTable;
 	private MyTableModel tableModel;
 	private String[] header = new String[]{"航班编号","折扣率","日期"};
+	private ISystemService systemService;
 
 	public static void main(String[] args) {
 		JFrame frame = new JFrame();
@@ -73,6 +76,7 @@ public class DiscountJPanel extends javax.swing.JPanel {
 	}
 	
 	public DiscountJPanel() {
+		systemService=RMIFactory.getService();
 		tableModel = new MyTableModel(header);
 		initGUI();
 		listener();
@@ -84,12 +88,48 @@ public class DiscountJPanel extends javax.swing.JPanel {
 		jButton_Cancel.addActionListener(bl);
 	}
 	
+	private void checkIsError(int inputTextInt) throws Exception{
+		String errorNoticeString = CheckUtil.getMapNoticeInfo(inputTextInt);
+		if(!errorNoticeString.equals("OK")){
+			throw new Exception("新增用户失败：" + errorNoticeString);
+		}
+	}
+	
 	class ButtonListener implements ActionListener {
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			String cmd = e.getActionCommand();
 			if (cmd.equals("保存")) {
+				Date date=(Date) datePicker.getValue();
+				String jTFlightNo=jTextField_FlightNo.getText();
+				String jTDiscountVal=jTextField_DiscountVal.getText();
+				
+				try {
+					checkIsError(CheckUtil.checkDateDay(datePicker.getText()));
+					if(!jTFlightNo.trim().matches("[0-9]+")){
+						throw new Exception("航班号错误！");
+					}if(!jTDiscountVal.trim().matches("0\\.[0-9]+")){
+						throw new Exception("折扣率错误！【0.9】");
+					}
+					
+
+					Discount discount=new Discount();
+					discount.setFlightid(Integer.parseInt(jTFlightNo));
+					discount.setDiscount(Double.parseDouble(jTDiscountVal));
+					discount.setDiscountdate(date);
+
+					systemService.addDiscount(discount);
+					JOptionPane.showMessageDialog(new JFrame().getContentPane(), 
+							"添加成功", "一个通知", JOptionPane.INFORMATION_MESSAGE);
+				} catch (Exception e2) {
+					// TODO: handle exception
+					JOptionPane.showMessageDialog(new JFrame().getContentPane(), 
+							e2.getMessage(), "一个令人难过的通知", JOptionPane.INFORMATION_MESSAGE);
+				}
+				
+				
+				
 				
 			}else if (cmd.equals("取消")){
 				datePicker.setText("");

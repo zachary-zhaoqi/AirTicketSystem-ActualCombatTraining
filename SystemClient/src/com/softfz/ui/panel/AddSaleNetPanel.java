@@ -18,6 +18,7 @@ import com.softfz.SystemContext;
 import com.softfz.model.NetDealer;
 import com.softfz.resources.Resources;
 import com.softfz.service.ISystemService;
+import com.softfz.ui.MessagePanel;
 import com.softfz.utils.CheckUtil;
 
 /**
@@ -91,22 +92,23 @@ public class AddSaleNetPanel extends javax.swing.JPanel {
 		public void actionPerformed(ActionEvent e) {
 			String cmd = e.getActionCommand();
 			if (cmd.equals("保存")) {
-				ISystemService service=RMIFactory.getService();
+				String netcode=jTextField_NetCode.getText();
+				String netname=jTextField_NetName.getText();
+				String director=jTextField_Director.getText();
+				String telephone=jTextField_Tel.getText();
+				String state="0";
+				String address=jTextField_Address.getText();
 				try {
-					
-					if(service.addNetDealer(SystemContext.LOGIN_SYSTEMUSER.getUserid(), jTextField_NetCode.getText(),
-							jTextField_NetName.getText(),"",jTextField_Director.getText(),jTextField_Tel.getText(),
-							"0",jTextField_Address.getText())) 
-					{
-						JOptionPane.showMessageDialog(new JFrame().getContentPane(), 
-								"新增销售网点成功", "一个很温馨的通知", JOptionPane.INFORMATION_MESSAGE); 
-					}else {
-						JOptionPane.showMessageDialog(new JFrame().getContentPane(), 
-								"新增销售网点失败", "一个令人难过的通知", JOptionPane.INFORMATION_MESSAGE);
-					}
-				} catch (RemoteException e1) {
-					// TODO 自动生成的 catch 块
-					e1.printStackTrace();
+					checkIsError(CheckUtil.checkNetCode(netcode));
+					checkIsError(CheckUtil.checkNetName(netname));
+					checkIsError(CheckUtil.checkDirector(director));
+					checkIsError(CheckUtil.checkPhoneNumber(telephone));
+					checkIsError(CheckUtil.checkAddress(address));
+					addNewSalNet(netcode, netname, director, telephone, address);
+				} catch (Exception e2) {
+					// TODO: handle exception
+					MessagePanel.showInfo(AddSaleNetPanel.this, e2.getMessage());
+					return;
 				}
 				
 			}else if (cmd.equals("取消")) {
@@ -121,7 +123,24 @@ public class AddSaleNetPanel extends javax.swing.JPanel {
 	
 	
 	private void addNewSalNet(String netcode, String netname, String director, String telephone, String address){
-
+		String password="888888";
+		String state="0";
+		ISystemService service=RMIFactory.getService();
+		try {
+			if(service.addNetDealer(SystemContext.LOGIN_SYSTEMUSER.getUserid(), netcode, netname, password, director, telephone, state, address))			
+			{
+				JOptionPane.showMessageDialog(new JFrame().getContentPane(), 
+						"新增销售网点成功", "一个很温馨的通知", JOptionPane.INFORMATION_MESSAGE); 
+			}else {
+				JOptionPane.showMessageDialog(new JFrame().getContentPane(), 
+						"新增销售网点失败", "一个令人难过的通知", JOptionPane.INFORMATION_MESSAGE);
+			}
+		} catch (RemoteException e1) {
+			// TODO 自动生成的 catch 块
+			e1.printStackTrace();
+			JOptionPane.showMessageDialog(new JFrame().getContentPane(), 
+					"出现错误了，有可能是远程服务器关闭", "一个令人难过的通知", JOptionPane.INFORMATION_MESSAGE);
+		}	
 	}
 	
 	private void initGUI() {

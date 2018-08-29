@@ -87,8 +87,8 @@ public class FlightMonthTotalPanel extends javax.swing.JPanel {
 		public void actionPerformed(ActionEvent e) {
 			String cmd = e.getActionCommand();
 			if(cmd.equals("查询")){
-				
-				
+				tableModel.doPageQuery(1, PageModel.DEFAULT_PAGESIZE);
+				pageTable.reflashTable();
 			}
 		}
 	}

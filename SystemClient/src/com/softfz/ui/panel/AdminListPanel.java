@@ -29,6 +29,7 @@ import com.softfz.ui.MessagePanel;
 import com.softfz.ui.table.PageMutiTable;
 import com.softfz.ui.table.PageMutiTableModel;
 import com.softfz.ui.table.PageTable;
+import com.softfz.utils.CheckUtil;
 
 /**
 * This code was edited or generated using CloudGarden's Jigloo
@@ -92,17 +93,76 @@ public class AdminListPanel extends javax.swing.JPanel {
 		public void actionPerformed(ActionEvent e) {
 			String cmd = e.getActionCommand();
 			if(cmd.equals("查询")){
-
+				tableModel.doPageQuery(1, PageModel.DEFAULT_PAGESIZE);
+				mutiTable.reflashTable();
 			}else if(cmd.equals("重置密码")){
-
+				List<SystemUser> list = tableModel.getCheckValue();
+				if(list.size() != 0){
+					ISystemService systemService = RMIFactory.getService();
+					if(systemService != null){
+						for (SystemUser systemUser : list) {
+							try {
+								if (systemService.updatePassword(systemUser.getUsername(), systemUser.getPassword(), "888888")){
+									MessagePanel.showInfo(AdminListPanel.this, systemUser.getUsername()+"重置成功！");
+								}else {
+									MessagePanel.showInfo(AdminListPanel.this, systemUser.getUsername()+"重置失败！");
+								}
+							} catch (RemoteException e1) {
+								// TODO 自动生成的 catch 块
+								e1.printStackTrace();
+								JOptionPane.showMessageDialog(new JFrame().getContentPane(), 
+										"不小心重置失败了呢，可能远程服务器被关闭了哦~", "一个令人难过的通知", JOptionPane.INFORMATION_MESSAGE); 
+							}
+						}
+					}
+				}else{
+					JOptionPane.showMessageDialog(null, "没有选中账户");
+				}
 			}else if(cmd.equals("冻结账号")){
-
+				List<SystemUser> list = tableModel.getCheckValue();
+				if(list.size() != 0){
+					ISystemService systemService = RMIFactory.getService();
+					if(systemService != null){
+						for (SystemUser systemUser : list) {
+							try {
+								systemUser.setState("1");
+								if(!systemService.modifySystemUser(systemUser)) {
+									MessagePanel.showInfo(AdminListPanel.this, systemUser.getUsername()+"冻结失败，请重试！");
+								}
+							} catch (RemoteException e1) {
+								// TODO 自动生成的 catch 块
+								e1.printStackTrace();
+								JOptionPane.showMessageDialog(new JFrame().getContentPane(), 
+										"不小心失败了呢，可能远程服务器被关闭了哦~", "一个令人难过的通知", JOptionPane.INFORMATION_MESSAGE); 
+							}
+						}
+						mutiTable.reflashTable();
+					}
+				}else{
+					JOptionPane.showMessageDialog(null, "没有选中账户");
+				}
 			}else if(cmd.equals("解冻账号")){
 				List<SystemUser> list = tableModel.getCheckValue();
 				if(list.size() != 0){
-
+					ISystemService systemService = RMIFactory.getService();
+					if(systemService != null){
+						for (SystemUser systemUser : list) {
+							try {
+								systemUser.setState("0");
+								if(!systemService.modifySystemUser(systemUser)) {
+									MessagePanel.showInfo(AdminListPanel.this, systemUser.getUsername()+"解冻失败，请重试！");
+								}
+							} catch (RemoteException e1) {
+								// TODO 自动生成的 catch 块
+								e1.printStackTrace();
+								JOptionPane.showMessageDialog(new JFrame().getContentPane(), 
+										"不小心失败了呢，可能远程服务器被关闭了哦~", "一个令人难过的通知", JOptionPane.INFORMATION_MESSAGE); 
+							}
+						}
+						mutiTable.reflashTable();
+					}
 				}else{
-					JOptionPane.showMessageDialog(null, "没有选中需要解冻的账户");
+					JOptionPane.showMessageDialog(null, "没有选中账户");
 				}
 			}
 		}

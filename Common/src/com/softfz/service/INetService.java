@@ -11,6 +11,7 @@ import com.softfz.model.Oiltax;
 import com.softfz.model.PageModel;
 import com.softfz.model.SaleRecord;
 import com.softfz.model.SaleTotal;
+import com.softfz.model.SalesTicketInfoShow;
 
 /**
  * 该接口定义了销售网点客户端的业务逻辑操作

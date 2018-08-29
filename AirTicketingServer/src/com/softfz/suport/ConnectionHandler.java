@@ -3,9 +3,12 @@ package com.softfz.suport;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 
 import javax.sql.DataSource;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 
 import com.softfz.config.DataSourceConfig;
 
@@ -22,6 +25,8 @@ public class ConnectionHandler {
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			JOptionPane.showMessageDialog(new JFrame().getContentPane(), 
+					e.getMessage(), "一个令人难过的通知", JOptionPane.INFORMATION_MESSAGE); 
 		}
 		return null;
 	}
@@ -32,6 +37,8 @@ public class ConnectionHandler {
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			JOptionPane.showMessageDialog(new JFrame().getContentPane(), 
+					e.getMessage(), "一个令人难过的通知", JOptionPane.INFORMATION_MESSAGE); 
 		}
 		return null;
 	}
@@ -42,6 +49,8 @@ public class ConnectionHandler {
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			JOptionPane.showMessageDialog(new JFrame().getContentPane(), 
+					e.getMessage(), "一个令人难过的通知", JOptionPane.INFORMATION_MESSAGE); 
 		}
 	}
 
@@ -52,6 +61,8 @@ public class ConnectionHandler {
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			JOptionPane.showMessageDialog(new JFrame().getContentPane(), 
+					e.getMessage(), "一个令人难过的通知", JOptionPane.INFORMATION_MESSAGE); 
 		}
 	}
 
@@ -62,6 +73,8 @@ public class ConnectionHandler {
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			JOptionPane.showMessageDialog(new JFrame().getContentPane(), 
+					e.getMessage(), "一个令人难过的通知", JOptionPane.INFORMATION_MESSAGE); 
 		}
 	}
 	

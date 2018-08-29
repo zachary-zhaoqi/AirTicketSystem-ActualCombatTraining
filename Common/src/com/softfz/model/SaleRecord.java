@@ -26,6 +26,7 @@ public class SaleRecord implements Serializable{
 	private String fromcity;
 	private String tocity;
 	
+	private int storeid;//°ó¶¨µÄÆ±id
 	
 	public int getSaleid() {
 		return saleid;
@@ -131,5 +132,11 @@ public class SaleRecord implements Serializable{
 	}
 	public static long getSerialversionuid() {
 		return serialVersionUID;
+	}
+	public int getStoreid() {
+		return storeid;
+	}
+	public void setStoreid(int storeid) {
+		this.storeid = storeid;
 	}
 }

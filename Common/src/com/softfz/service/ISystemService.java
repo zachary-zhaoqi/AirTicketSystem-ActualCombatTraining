@@ -56,9 +56,10 @@ public interface ISystemService extends Remote {
 	/**
 	 * 根据传入的SystemUser对象去更新表中的信息
 	 * @param systemUser
+	 * @return 
 	 * @throws RemoteException
 	 */
-	public void modifySystemUser(SystemUser systemUser) throws RemoteException;
+	public boolean modifySystemUser(SystemUser systemUser) throws RemoteException;
 	
 	
 	/**
@@ -79,11 +80,11 @@ public interface ISystemService extends Remote {
 	public void resetPassword(List<Integer> userids) throws RemoteException;
 	
 	
-//	/**
-//	 * 冻结管理员帐号
-//	 * @param userids
-//	 */
-//	public void lockSystemUser(List<Integer> userids) throws RemoteException;
+	/**
+	 * 冻结管理员帐号
+	 * @param userids
+	 */
+	public void lockSystemUser(List<Integer> userids) throws RemoteException;
 	
 	/**
 	 * 检查管理员账号是否被冻结（被冻结就抛出被冻结的异常）
@@ -147,8 +148,9 @@ public interface ISystemService extends Remote {
 	/**
 	 * 重置销售网点的密码为123456
 	 * @param netids
+	 * @throws RemoteException,Exception 
 	 */
-	public void resetNetPassword(int netid, String passwordOld) throws RemoteException;
+	public void resetNetPassword(int netid, String passwordOld) throws RemoteException, RemoteException,Exception;
 //	public void resetNetPassword(List<Integer> netids) throws RemoteException;
 	
 	
@@ -195,8 +197,9 @@ public interface ISystemService extends Remote {
 	/**
 	 * 添加折扣信息
 	 * @param discount
+	 * @throws Exception 
 	 */
-	public void addDiscount(Discount discount) throws RemoteException;
+	public void addDiscount(Discount discount) throws RemoteException, Exception;
 	
 	
 	/**
@@ -256,9 +259,10 @@ public interface ISystemService extends Remote {
 	/**
 	 * 新增航班经停信息
 	 * @param flightStop
+	 * @return 
 	 * @throws RemoteException
 	 */
-	public void addFlightStop(FlightStop flightStop) throws RemoteException;
+	public boolean addFlightStop(FlightStop flightStop) throws RemoteException;
 	
 	/**
 	 * 根据航班编号查询航班信息
