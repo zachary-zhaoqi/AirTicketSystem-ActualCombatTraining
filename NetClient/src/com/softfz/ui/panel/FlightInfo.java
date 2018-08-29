@@ -3,6 +3,8 @@ package com.softfz.ui.panel;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.rmi.RemoteException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import javax.swing.JButton;
@@ -14,7 +16,12 @@ import javax.swing.JTextField;
 import javax.swing.WindowConstants;
 
 import com.eltima.components.ui.DatePicker;
+import com.softfz.RMIFactory;
+import com.softfz.model.Discount;
 import com.softfz.model.Flight;
+import com.softfz.model.PageModel;
+import com.softfz.model.SalesTicketInfoShow;
+import com.softfz.model.TicketStore;
 import com.softfz.resources.Resources;
 import com.softfz.service.INetService;
 import com.softfz.ui.Center;
@@ -46,7 +53,7 @@ public class FlightInfo extends javax.swing.JPanel {
 	
 	
 	
-	private String[] header = new String[]{"","时间","机场","航空公司/机型","价格/折扣","剩余票数"};
+	private String[] header = new String[]{"","起飞时间","到达时间","起飞机场","到达机场","航空公司","机型","价格","折扣","剩余票数"};
 	private SearchTableModel tableModel;
 	private INetService facade;
 	
@@ -146,17 +153,33 @@ public class FlightInfo extends javax.swing.JPanel {
 			e.printStackTrace();
 		}
 	}
-	
-	
+
 	private class ButtonListener implements ActionListener{
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			String cmd = e.getActionCommand();
 			if(cmd.equals("查询")){
-
+				tableModel.doPageQuery(1, PageModel.DEFAULT_PAGESIZE);
+				radioTable.reflashTable();
 			}else if(cmd.equals("订票")){
-
+				Flight flight=tableModel.getCheckFlight();
+				if (flight.getStorenum()>0) {
+					Date date=(Date) datePicker.getValue();
+					java.sql.Date sqlDate = new java.sql.Date(date.getTime());
+					
+					JFrame frame = new JFrame();
+					Ticketing ticketing=new Ticketing(center);
+					ticketing.buildTicket(flight, sqlDate );
+					frame.getContentPane().add(ticketing);
+					frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+					frame.pack();
+					frame.setLocationRelativeTo(null);
+					frame.setVisible(true);
+				}else {
+					JOptionPane.showMessageDialog(null, "座位不足，无法订票");
+				}
+				
 			}
 			
 		}
@@ -196,6 +219,31 @@ public class FlightInfo extends javax.swing.JPanel {
 		 */
 		@Override
 		public Object getValueAt(int rowIndex, int columnIndex) {
+			Flight flight=(Flight) this.getPageModel().getResult().get(rowIndex);
+			switch (columnIndex) {
+			case 0:
+				return this.getRadionBtn(rowIndex);
+			case 1:
+				return flight.getPlanstarttime();
+			case 2:
+				return flight.getPlanendtime();
+			case 3:
+				return flight.getStartairport();
+			case 4:
+				return flight.getEndairport();
+			case 5:
+				return flight.getAirname();
+			case 6:
+				return flight.getFlighttype();
+			case 7:
+				return flight.getPrice();
+			case 8:
+				return flight.getDiscount();
+			case 9:
+				return flight.getStorenum();
+			default:
+				break;
+			}
 			return null;
 		}
 		
@@ -206,7 +254,28 @@ public class FlightInfo extends javax.swing.JPanel {
 		 */
 		@Override
 		public void doPageQuery(int currentPage, int pageSize) {
-
+			INetService netService=RMIFactory.getService();
+			if (netService!=null) {
+				String fromcity=fromCityField.getText().trim();
+				String tocity=toCityField.getText().trim();
+				Date planDate = (Date) datePicker.getValue();
+				
+				if (fromcity==null||fromcity==""||fromcity.length()==0||tocity==null||tocity==""||tocity.length()==0) {
+					JOptionPane.showMessageDialog(null, "请填写完整的查询条件！");
+				}else {
+					PageModel<Flight> pageModel;
+					try {
+						pageModel = netService.queryFlights(fromcity, tocity, planDate, currentPage, pageSize);
+						super.setPageModel(pageModel);
+					} catch (RemoteException e) {
+						// TODO 自动生成的 catch 块
+						e.printStackTrace();
+						String eStr = e.getMessage().substring(e.getMessage().lastIndexOf(":")+1);
+						JOptionPane.showMessageDialog(null, eStr);
+					}
+					
+				}
+			}
 		}
 	}
 		

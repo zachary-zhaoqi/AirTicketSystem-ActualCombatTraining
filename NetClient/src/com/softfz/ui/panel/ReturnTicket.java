@@ -3,6 +3,7 @@ package com.softfz.ui.panel;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.rmi.RemoteException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 
@@ -67,6 +68,7 @@ public class ReturnTicket extends javax.swing.JPanel {
 	private HashMap<String, String> errorMap = new HashMap<String, String>();
 	private Boolean returnFlag = false;
 	private int errorNoticeInt;
+	private SaleRecord saleRecord;
 
 	
 	public static void main(String[] args) {
@@ -111,9 +113,11 @@ public class ReturnTicket extends javax.swing.JPanel {
 		ticketdata[0] = flightNo;
 		ticketdata[1] = "<html>" + saleRecord.getStartairport() + "<br>" + saleRecord.getEndairpotr() + "</html>";
 		
-		String start = (String)datePicker.getText() + " " + flight.getPlanstarttime();
-		String end = (String)datePicker.getText() + " " + flight.getPlanendtime();
+		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		String saleRecordstaredate=formatter.format(saleRecord.getStarttime());
 		
+		String start = (String)formatter.format(saleRecord.getStarttime());
+		String end = (String)formatter.format(saleRecord.getArrtime());
 		ticketdata[2] = "<html>" + start + "<br>" + end + "</html>";
 		ticketdata[3] = String.valueOf(saleRecord.getTicketmoney());
 		ticketdata[4] = String.valueOf(saleRecord.getOiltax());
@@ -124,6 +128,8 @@ public class ReturnTicket extends javax.swing.JPanel {
 		tableModel.setDataVector(data,header);
 		table.repaint();
 		setSuitableColumn(table);//设置列宽以匹配显示
+		this.saleRecord=saleRecord;
+		
 	}
 		
 	
@@ -140,11 +146,73 @@ public class ReturnTicket extends javax.swing.JPanel {
 		public void actionPerformed(ActionEvent e) {
 			String cmd = e.getActionCommand();
 			if(cmd.equals("查询")){
+				String id=jTextField_IdCard.getText().trim();
+				String fromcity=jTextField_FromCity.getText().trim();
+				String tocity=jTextField_ToCity.getText().trim();
+				Date date=(Date) datePicker.getValue();
+				java.sql.Date sqlDate = new java.sql.Date(date.getTime());
+				checkIsError(CheckUtil.checkIdCard(id));
 				
+				if (returnFlag) {
+					INetService netService=RMIFactory.getService();
+					if (netService!=null) {
+						try {
+							buildTable(netService.getSaleRecord(NetContext.LOGIN_NETDEALER.getNetid(), fromcity, tocity, id, sqlDate));
+						} catch (RemoteException e1) {
+							// TODO 自动生成的 catch 块
+							e1.printStackTrace();
+							JOptionPane.showMessageDialog(null, e1.getMessage());
+						}
+					}
+				}
+				jButton_OK.setEnabled(true);
 			}else if(cmd.equals("确认退票")){
+				String tuipiaoyuanyin=jTextArea1.getText();
+				BounceRecord bounceRecord = new BounceRecord();
+				if (tuipiaoyuanyin.equals("")||tuipiaoyuanyin==null||tuipiaoyuanyin.length()==0) {
+					JOptionPane.showMessageDialog(null, "请先填写退票理由！");
+				}else {
+					bounceRecord.setSaleid(saleRecord.getSaleid());
+					bounceRecord.setNetid(NetContext.LOGIN_NETDEALER.getNetid());
+					bounceRecord.setIdcard(saleRecord.getIdcard());
+					bounceRecord.setCusttel(saleRecord.getCusttel());
+					bounceRecord.setReason(tuipiaoyuanyin);
+					bounceRecord.setMoney(Integer.parseInt((String) table.getValueAt(0, 6)));
+					
+					
+					INetService netService=RMIFactory.getService();
+					if (netService!=null) {
+						try {
+							netService.cancelTicket(bounceRecord);
+							JOptionPane.showMessageDialog(null, "退票成功");
+							tableModel.setDataVector(null,header);
+							table.repaint();
+							setSuitableColumn(table);//设置列宽以匹配显示
+							jTextField_FromCity.setText("");
+							jTextField_IdCard.setText("");
+							jTextField_ToCity.setText("");
+							jTextArea1.setText("");
+							jButton_OK.setEnabled(false);
+						} catch (RemoteException e1) {
+							// TODO 自动生成的 catch 块
+							e1.printStackTrace();
+							JOptionPane.showMessageDialog(null, e1.getMessage());
+						}
+					}
+				}
+				
+				
+				
 				
 			}if(cmd.equals("取消")){
-				
+				tableModel.setDataVector(null,header);
+				table.repaint();
+				setSuitableColumn(table);//设置列宽以匹配显示
+				jTextField_FromCity.setText("");
+				jTextField_IdCard.setText("");
+				jTextField_ToCity.setText("");
+				jTextArea1.setText("");
+				jButton_OK.setEnabled(false);
 			}
 			
 		}
@@ -290,6 +358,8 @@ public class ReturnTicket extends javax.swing.JPanel {
 		String errorNoticeString = CheckUtil.getMapNoticeInfo(inputTextInt);
 		if(!errorNoticeString.equals("OK")){
 			JOptionPane.showMessageDialog(ReturnTicket.this, errorNoticeString);
+			returnFlag = false;
+		}else {
 			returnFlag = true;
 		}
 	}

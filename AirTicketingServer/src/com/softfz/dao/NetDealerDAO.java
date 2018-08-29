@@ -1,9 +1,17 @@
 package com.softfz.dao;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.sql.DataSource;
+
+import org.apache.commons.beanutils.BeanUtils;
 
 import com.softfz.config.DataSourceConfig;
 import com.softfz.jdbc.JdbcOperator;
@@ -11,6 +19,7 @@ import com.softfz.jdbc.JdbcOperatorImpl;
 import com.softfz.model.NetDealer;
 import com.softfz.model.PageModel;
 import com.softfz.model.SystemUser;
+import com.softfz.suport.ConnectionHandler;
 
 public class NetDealerDAO {
 	private JdbcOperator jdbcOperator;
@@ -99,6 +108,55 @@ public class NetDealerDAO {
 		// TODO 自动生成的方法存根
 		String sql="UPDATE airticket.netdealer SET state=? where netid=?;";
 		int result=jdbcOperator.update(sql,"0",netid);
+	}
+
+	public NetDealer login(String netcode, String password) {
+		// TODO 自动生成的方法存根
+		String sql="SELECT * FROM airticket.netdealer where NETCODE=? and PASSWORD=?;";
+		NetDealer netDealer=(NetDealer) jdbcOperator.queryForJavaBean(sql, NetDealer.class, netcode,password);
+		return netDealer;
+	}
+
+	public int updateNetClientPwd(int netid, String passwordOld, String passwordNew) {
+		// TODO 自动生成的方法存根
+		String sql="select netid from airticket.netdealer where netid=? and password=?;";
+		
+		Connection conn = null;
+		PreparedStatement preparedStatement=null;
+		ResultSet resultSet=null;
+		int netid1=0;
+		try {
+			conn = ConnectionHandler.getConnection(DataSourceConfig.getDataSource());
+			//完成查询并返回查询结果的数据
+			if (conn!=null) {
+				preparedStatement=conn.prepareStatement(sql);
+				
+				preparedStatement.setInt(1, netid);
+				preparedStatement.setString(2, passwordOld);
+				resultSet=preparedStatement.executeQuery();
+				
+				while (resultSet.next()) {
+					netid1=resultSet.getInt(1);
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new RuntimeException(e.getMessage());
+		} finally{
+			if(conn != null){
+				ConnectionHandler.closeConn(conn);
+			}
+			if (preparedStatement!=null) {
+				ConnectionHandler.closeStatement(preparedStatement);
+			}
+			if (resultSet!=null) {
+				ConnectionHandler.closeResultSet(resultSet);
+			}
+		}
+		
+		sql="UPDATE airticket.netdealer SET PASSWORD = ? WHERE netid = ?;";
+		int result=jdbcOperator.queryForInt(sql, passwordNew,netid1);
+		return result;
 	}
 	
 }

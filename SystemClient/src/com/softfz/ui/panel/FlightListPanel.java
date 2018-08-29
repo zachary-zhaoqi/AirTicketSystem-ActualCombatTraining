@@ -32,6 +32,7 @@ import com.softfz.service.ISystemService;
 import com.softfz.ui.table.PageRadioTable;
 import com.softfz.ui.table.PageTable;
 import com.softfz.ui.table.PageTableModel;
+import com.softfz.ui.table.mutitable.MutiTable;
 
 /**
 * This code was edited or generated using CloudGarden's Jigloo
@@ -92,7 +93,8 @@ public class FlightListPanel extends javax.swing.JPanel {
 		public void actionPerformed(ActionEvent e) {
 			String cmd = e.getActionCommand();
 			if(cmd.equals("查询")) {
-
+				tableModel.doPageQuery(1, PageModel.DEFAULT_PAGESIZE);
+				pageTable.reflashTable();
 			}
 		}
 	}
@@ -166,6 +168,7 @@ public class FlightListPanel extends javax.swing.JPanel {
 				}else if(flighttypeString.trim().equals("国际航班")){
 					flighttype = 1;
 				}
+				
 				
 				if(isstopString.trim().equals("无经停")){
 					isstop = 0;
@@ -246,7 +249,7 @@ public class FlightListPanel extends javax.swing.JPanel {
 				{
 					ComboBoxModel jComboBox_FlightTypeModel = 
 							new DefaultComboBoxModel(
-									new String[] { "国内", "国际" });
+									new String[] { "国内航班", "国际航班"});
 					jComboBox_FlightType = new JComboBox();
 					jPanel_UP.add(jComboBox_FlightType);
 					jComboBox_FlightType.setModel(jComboBox_FlightTypeModel);
@@ -255,7 +258,7 @@ public class FlightListPanel extends javax.swing.JPanel {
 				{
 					ComboBoxModel jComboBox_IsStopModel = 
 							new DefaultComboBoxModel(
-									new String[] { "无经停", "有经停" });
+									new String[] { "无经停", "有经停"});
 					jComboBox_IsStop = new JComboBox();
 					jPanel_UP.add(jComboBox_IsStop);
 					jComboBox_IsStop.setModel(jComboBox_IsStopModel);

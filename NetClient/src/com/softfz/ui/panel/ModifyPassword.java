@@ -75,9 +75,23 @@ public class ModifyPassword extends javax.swing.JPanel {
 		public void actionPerformed(ActionEvent e) {
 			String cmd = e.getActionCommand();
 			if(cmd.equals("修改")){
-
-			}if(cmd.equals("取消")){
+				int netid=NetContext.LOGIN_NETDEALER.getNetid();
+				String oldPassword=jTextField_OldPwd.getText();
+				String newPwd1=jTextField_NewPwd1.getText();
+				String newPwd2=jTextField_NewPwd2.getText();
+				try {
+					checkIsError(CheckUtil.checkPwd(newPwd1));
+					checkIsError(CheckUtil.checkTwoPwd(newPwd1,newPwd2));
+					modifyPassword(netid, oldPassword, newPwd1);
+				} catch (Exception e1) {
+					// TODO 自动生成的 catch 块
+					e1.printStackTrace();
+					JOptionPane.showMessageDialog(new JFrame().getContentPane(), 
+							e1.getMessage(), "一个通知", JOptionPane.INFORMATION_MESSAGE);
+				}
 				
+			}if(cmd.equals("取消")){
+				cleanInput();
 			}
 			
 		}
@@ -88,9 +102,18 @@ public class ModifyPassword extends javax.swing.JPanel {
 	 * @param netid
 	 * @param oldPassword
 	 * @param newPassword
+	 * @throws RemoteException 
 	 */
-	private void modifyPassword	(int netid, String oldPassword, String newPassword){
-		
+	private void modifyPassword	(int netid, String oldPassword, String newPassword) throws RemoteException{
+		INetService netService=RMIFactory.getService();
+		if (netService.updateNetClientPwd(netid,oldPassword, newPassword)) {
+			JOptionPane.showMessageDialog(new JFrame().getContentPane(), 
+					"修改成功", "一个通知", JOptionPane.INFORMATION_MESSAGE);
+			NetContext.LOGIN_NETDEALER.setPassword(newPassword);
+		} else {
+			JOptionPane.showMessageDialog(new JFrame().getContentPane(), 
+					"修改失败", "一个通知", JOptionPane.INFORMATION_MESSAGE);
+		}
 	}
 	
 	/**

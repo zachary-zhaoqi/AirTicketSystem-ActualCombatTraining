@@ -2,11 +2,13 @@ package com.softfz.ui;
 import java.awt.event.InputEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.rmi.RemoteException;
 import java.util.Timer;
 import java.util.TimerTask;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPasswordField;
@@ -82,6 +84,9 @@ public class Login extends javax.swing.JFrame {
 	
 	private void initData() {
 		//读取server.properties配置文件中的数据显示到界面上
+		ServerConfigFile.readServerConfig();
+		jTextField_Ip.setText(ServerConfig.RMI_IP);
+		jTextField_Port.setText(ServerConfig.RMI_PORT);
 	}
 	
 	
@@ -126,14 +131,70 @@ public class Login extends javax.swing.JFrame {
 				}
 				
 				if(jButtonPress == jButton_Login){//按下登陆按钮
-					//测试登陆操作：参考test.TestRmiClient					
-					
+					//测试登陆操作：参考test.TestRmiClient		
+					NetDealer netDealer=null;
+					INetService netService;
+					String name=jTextField_Name.getText();
+					String password=jPasswordField.getText();
+					try {
+						checkIsError(CheckUtil.checkNetCode(name));
+						checkIsError(CheckUtil.checkPwd(password));
+						
+						netService=RMIFactory.getService();
+						if (netService!=null) {
+							netDealer=netService.login(name, password);
+							if (netDealer!=null&&netDealer.getState().equals("0")) {
+								//保存当前登陆的系统管理端对象
+								NetContext.LOGIN_NETDEALER=netDealer;
+								NetContext.OIL_TAX=netService.getOilTax();
+								center =new Center();
+								center.setLocationRelativeTo(null);
+								//显示出加载界面
+								wUI = new WelcomeUI();
+								//wUI.show();//用JWindows时使用
+								wUI.setVisible(true);
+								TimerTask task = new TimerTask() {  
+						            public void run() {  
+						              wUI.dispose();
+						              center.setVisible(true);
+						            }  
+						          };  
+						        Timer timer = new Timer();  
+						        timer.schedule(task, 3500); 
+								
+								Login.this.setVisible(false);
+							}else {
+								JOptionPane.showMessageDialog(new JFrame().getContentPane(), 
+										"账户或密码输入错误", "一个通知", JOptionPane.INFORMATION_MESSAGE);
+							}
+						}
+					}catch (Exception e2) {
+						// TODO 自动生成的 catch 块
+						e2.printStackTrace();
+						JOptionPane.showMessageDialog(new JFrame().getContentPane(), 
+								e2.getMessage(), "一个通知", JOptionPane.INFORMATION_MESSAGE);
+					}
 				}else if(jButtonPress == jButton_Save){//按下保存按钮
 					//TODO: 2018-6-13
-					
+					try {
+						checkIsError(CheckUtil.checkIp(jTextField_Ip.getText()));
+						checkIsError(CheckUtil.checkIp(jTextField_Port.getText()));
+						ServerConfig.RMI_IP=jTextField_Ip.getText();
+						ServerConfig.RMI_PORT=jTextField_Port.getText();
+						ServerConfigFile.saveServerConfig();
+						JOptionPane.showMessageDialog(new JFrame().getContentPane(), 
+								"保存成功", "一个通知", JOptionPane.INFORMATION_MESSAGE);
+					} catch (Exception e1) {
+						// TODO 自动生成的 catch 块
+						e1.printStackTrace();
+						JOptionPane.showMessageDialog(new JFrame().getContentPane(), 
+								e1.getMessage(), "一个通知", JOptionPane.INFORMATION_MESSAGE);
+					}
 				}else if(jButtonPress == jButton_Cancel){//按下取消按钮
-					
-
+					int exitFlag = JOptionPane.showConfirmDialog(Login.this, "确认退出 ？", "退出确认", JOptionPane.YES_NO_OPTION);
+					if(exitFlag == 0){
+						System.exit(0);
+					}
 				}
 			}
 		}

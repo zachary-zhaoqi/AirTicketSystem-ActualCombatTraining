@@ -197,8 +197,9 @@ public interface ISystemService extends Remote {
 	/**
 	 * 添加折扣信息
 	 * @param discount
+	 * @throws Exception 
 	 */
-	public void addDiscount(Discount discount) throws RemoteException;
+	public void addDiscount(Discount discount) throws RemoteException, Exception;
 	
 	
 	/**
@@ -258,9 +259,10 @@ public interface ISystemService extends Remote {
 	/**
 	 * 新增航班经停信息
 	 * @param flightStop
+	 * @return 
 	 * @throws RemoteException
 	 */
-	public void addFlightStop(FlightStop flightStop) throws RemoteException;
+	public boolean addFlightStop(FlightStop flightStop) throws RemoteException;
 	
 	/**
 	 * 根据航班编号查询航班信息

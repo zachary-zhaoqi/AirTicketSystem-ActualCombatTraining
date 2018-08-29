@@ -46,5 +46,7 @@ public interface JdbcOperator {
 	public PageModel queryPageModel(int currentPage, int pageSize, StringBuilder querySql,
 			StringBuilder countSql, StringBuilder whereSql, List paramList,
 			Class javaBeanType);
-		
+	
+	//·µ»ØÎ¨Ò»Öµ
+	public Object queryOneValue(String sql,Object... params);	
 }

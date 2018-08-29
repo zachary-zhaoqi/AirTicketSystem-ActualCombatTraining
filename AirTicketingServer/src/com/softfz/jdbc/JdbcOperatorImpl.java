@@ -18,6 +18,7 @@ import javax.sql.DataSource;
 import org.apache.commons.beanutils.BeanUtils;
 
 import com.softfz.config.DataSourceConfig;
+import com.softfz.model.Flight;
 import com.softfz.model.PageModel;
 import com.softfz.model.SystemUser;
 import com.softfz.suport.ConnectionHandler;
@@ -199,6 +200,46 @@ public class JdbcOperatorImpl implements JdbcOperator{
 		// TODO Auto-generated method stub
 		return null;
 	}
+	@Override
+	public Object queryOneValue(String sql,Object... params) {
+		// TODO Auto-generated method stub
+		Connection conn = null;
+		PreparedStatement preparedStatement=null;
+		ResultSet resultSet=null;
+		
+		Object object=null;
+		try {
+			conn = ConnectionHandler.getConnection(dataSource);
+			//完成查询并返回查询结果的数据
+			if (conn!=null) {
+				preparedStatement=conn.prepareStatement(sql);
+				for (int i = 0; i < params.length; i++) {
+					preparedStatement.setObject(i+1, params[i]);
+				}
+				resultSet=preparedStatement.executeQuery();
+				ResultSetMetaData resultSetMetaData=resultSet.getMetaData();
+				int count=resultSetMetaData.getColumnCount();
+				
+				while (resultSet.next()) {
+					object=resultSet.getObject(1);	
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new RuntimeException(e.getMessage());
+		} finally{
+			if(conn != null){
+				ConnectionHandler.closeConn(conn);
+			}
+			if (preparedStatement!=null) {
+				ConnectionHandler.closeStatement(preparedStatement);
+			}
+			if (resultSet!=null) {
+				ConnectionHandler.closeResultSet(resultSet);
+			}
+		}
+		return object;
+	}
 
 	
 	public static void main(String[] args) {
@@ -208,9 +249,15 @@ public class JdbcOperatorImpl implements JdbcOperator{
 //		SystemUser systemUser=(SystemUser)jdbcOperator.queryForJavaBean(sql,SystemUser.class,name);
 //		System.out.println(systemUser.toString());
 		
-		String sql="SELECT * FROM airticket.systemuser;";
+		
+		String sql;
+		List<Flight> flights;
 		JdbcOperator jdbcOperator=new JdbcOperatorImpl(DataSourceConfig.getDataSource());
-		List<SystemUser> list =jdbcOperator.queryForJavaBeanList(sql, SystemUser.class);
-		System.out.println(list.size());
+		sql="SELECT * FROM airticket.flight where flightno like ? and FROMCITY like ? and TOCITY like ? and TYPE like ? and ISSTOP like ? ;";
+		flights=jdbcOperator.queryForJavaBeanList(sql, Flight.class, "%","%","%",0,0);
+		
+
+		
+		System.out.println(flights.size());
 	}
 }

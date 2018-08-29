@@ -4,6 +4,7 @@ import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.rmi.RemoteException;
+import java.util.Dictionary;
 import java.util.List;
 
 import javax.swing.BorderFactory;
@@ -110,7 +111,8 @@ public class AddFlightPanel extends javax.swing.JPanel {
 	}
 
 	public AddFlightPanel() {
-
+		systemService=RMIFactory.getService();
+		
 		getExistAirportAndCompany();
 		initGUI();
 		listener();
@@ -125,7 +127,28 @@ public class AddFlightPanel extends javax.swing.JPanel {
 	}
 
 	private void checkInputInfo() throws Exception {
-
+		checkIsError(CheckUtil.checkFlightNo(jTextField1.getText()));
+		checkIsError(CheckUtil.checkDate(jTextField6.getText()));
+		checkIsError(CheckUtil.checkDate(jTextField9.getText()));
+		checkIsError(CheckUtil.checkCityAndFlighttype(jTextField5.getText(), jTextField8.getText(), jTextField2.getText()));
+		checkIsError(CheckUtil.checkIsNum(jTextField3.getText(), jTextField4.getText(),
+				jTextField7.getText(),0));
+		if (flagIsStop) {
+			checkIsError(CheckUtil.checkIsNum(jTextField12.getText(), 
+					jTextField13.getText(), jTextField11.getText(),1));
+			checkIsError(CheckUtil.checkDate(jTextField14.getText()));
+			checkIsError(CheckUtil.checkDate(jTextField15.getText()));
+			checkIsError(CheckUtil.checkStopCity(jTextField10.getText()));
+		}
+	}
+	
+	private void checkInputInfo(FlightStop flightStop) throws Exception {
+		// TODO 自动生成的方法存根
+		checkIsError(CheckUtil.checkIsNum(Integer.toString(flightStop.getStopprice()), 
+				Integer.toString(flightStop.getFlightprice()), Integer.toString(flightStop.getAirrange()),1));
+		checkIsError(CheckUtil.checkDate(flightStop.getAgaintime()));
+		checkIsError(CheckUtil.checkDate(flightStop.getArrviedtime()));
+		checkIsError(CheckUtil.checkStopCity(flightStop.getStopcity()));
 	}
 
 	private void checkIsError(int inputTextInt) throws Exception {
@@ -141,15 +164,46 @@ public class AddFlightPanel extends javax.swing.JPanel {
 		public void actionPerformed(ActionEvent e) {
 			String cmd = e.getActionCommand();
 			if (cmd.equals("保存")) {
-
+				Flight flight=new Flight();
+				try {
+					checkInputInfo();
+					flight=getFlightBasicInfo();
+					flight.setFlightid(systemService.addFlight(flight));
+					if (flight.getFlightid()!=0&&flagIsStop==false) {
+						JOptionPane.showMessageDialog(new JFrame().getContentPane(), 
+								"航班"+flight.getFlightno()+"添加成功了哦！", "一个调皮的小通知", JOptionPane.INFORMATION_MESSAGE);
+					}
+				} catch (Exception e1) {
+					// TODO 自动生成的 catch 块
+					e1.printStackTrace();
+					JOptionPane.showMessageDialog(new JFrame().getContentPane(), 
+							e1.getMessage(), "一个令人难过的通知", JOptionPane.INFORMATION_MESSAGE);
+				}
+				if (flight.getIsstop() !=0) {
+					FlightStop flightStop=getFlightStopInfo(flight.getFlightid());
+					try {
+						if(systemService.addFlightStop(flightStop)) {
+							JOptionPane.showMessageDialog(new JFrame().getContentPane(), 
+									"航班"+flight.getFlightno()+"添加成功了哦！", "一个调皮的小通知", JOptionPane.INFORMATION_MESSAGE);
+						}
+					} catch (Exception e1) {
+						// TODO 自动生成的 catch 块
+						e1.printStackTrace();
+						JOptionPane.showMessageDialog(new JFrame().getContentPane(), 
+								e1.getMessage(), "一个令人难过的通知", JOptionPane.INFORMATION_MESSAGE);
+					}
+				}
 			} else if (cmd.equals("取消")) {
-				
+				cleanInputInfo();
 			} else if (cmd.equals("是否经停(无经停)")){
-
+				flagIsStop=true;
+				isStopFun();
 			} else if (cmd.equals("是否经停(有经停)")){
-
+				flagIsStop=false;
+				isStopFun();
 			}
 		}
+
 
 	}
 
@@ -177,8 +231,32 @@ public class AddFlightPanel extends javax.swing.JPanel {
 	 * @return
 	 */
 	private Flight getFlightBasicInfo() {
-
-		return null;
+		Flight flight=new Flight();
+		flight.setUserid(SystemContext.LOGIN_SYSTEMUSER.getUserid());
+		flight.setFlightno(jTextField1.getText());
+		flight.setFromcity(jTextField5.getText());
+		flight.setTocity(jTextField8.getText());
+		flight.setFlighttype(jTextField2.getText());
+		flight.setPlanstarttime(jTextField6.getText());
+		flight.setPlanendtime(jTextField9.getText());
+		flight.setPrice(Integer.parseInt(jTextField3.getText()));
+		flight.setAirrange(Integer.parseInt(jTextField4.getText()));
+		flight.setTicketnum(Integer.parseInt(jTextField7.getText()));
+		flight.setAirname(((Dirctory) jComboBox5.getSelectedItem()).getDicname());
+		flight.setDicid(((Dirctory) jComboBox5.getSelectedItem()).getDicid());
+		flight.setStartairport(((Dirctory) jComboBox2.getSelectedItem()).getDicname());
+		flight.setEndairport(((Dirctory) jComboBox3.getSelectedItem()).getDicname());
+		if (jComboBox1.getSelectedItem().toString().equals("国内航班")) {
+			flight.setType(0);
+		}else {
+			flight.setType(1);
+		}
+		if(jButton_IsStop.getText().equals("是否经停(无经停)")) {
+			flight.setIsstop(0);
+		}else {
+			flight.setIsstop(1);
+		}
+		return flight;
 	}
 
 	/**
@@ -188,7 +266,16 @@ public class AddFlightPanel extends javax.swing.JPanel {
 	 */
 	private FlightStop getFlightStopInfo(int flightid) {
 		// 以下涉及经停表中字段
-		return null;
+		FlightStop flightStop=new FlightStop();
+		flightStop.setFlightid(flightid);
+		flightStop.setStopcity(jTextField10.getText());
+		flightStop.setStopairport(((Dirctory) jComboBox4.getSelectedItem()).getDicname());
+		flightStop.setArrviedtime(jTextField14.getText());
+		flightStop.setAgaintime(jTextField15.getText());
+		flightStop.setStopprice(Integer.parseInt(jTextField12.getText()));
+		flightStop.setFlightprice(Integer.parseInt(jTextField13.getText()));
+		flightStop.setAirrange(Integer.parseInt(jTextField11.getText()));
+		return flightStop;
 
 	}
 
@@ -196,12 +283,23 @@ public class AddFlightPanel extends javax.swing.JPanel {
 	 * 获取数据库中存在的机场和航空公司数据
 	 */
 	private void getExistAirportAndCompany() {
-
+		
+		try {
+			allAirPorts=systemService.getAllAirPorts();
+			allAirLines=systemService.getAllAirLines();
+		} catch (RemoteException e) {
+			// TODO 自动生成的 catch 块
+			e.printStackTrace();
+			JOptionPane.showMessageDialog(new JFrame().getContentPane(), 
+					"出现错误了，有可能是远程服务器关闭", "一个令人难过的通知", JOptionPane.INFORMATION_MESSAGE);
+		}
+		
 	}
 	
 	/**
 	 * 定义AirModel
 	 * @author Administrator
+	 *
 	 *
 	 */
 	private class AirModel extends DefaultComboBoxModel {
