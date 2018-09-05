@@ -53,7 +53,7 @@ public class FlightInfo extends javax.swing.JPanel {
 	
 	
 	
-	private String[] header = new String[]{"","起飞时间","到达时间","起飞机场","到达机场","航空公司","机型","价格","折扣","剩余票数"};
+	private String[] header = new String[]{"","起飞时间","到达时间","起飞机场","到达机场","是否经停","机型","价格","折扣","剩余票数","航班编号"};
 	private SearchTableModel tableModel;
 	private INetService facade;
 	
@@ -232,7 +232,11 @@ public class FlightInfo extends javax.swing.JPanel {
 			case 4:
 				return flight.getEndairport();
 			case 5:
-				return flight.getAirname();
+				if (flight.getIsstop()==0) {
+					return"无经停";
+				} else {
+					return"有经停";
+				}
 			case 6:
 				return flight.getFlighttype();
 			case 7:
@@ -241,6 +245,8 @@ public class FlightInfo extends javax.swing.JPanel {
 				return flight.getDiscount();
 			case 9:
 				return flight.getStorenum();
+			case 10:
+				return flight.getFlightno();
 			default:
 				break;
 			}

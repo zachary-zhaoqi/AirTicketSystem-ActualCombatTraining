@@ -96,33 +96,42 @@ public class FlightDAO {
 		String sql;
 		String dateStr = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(planDate);
 		List<Flight> flights;
-		sql="select a.*,b.DICNAME\r\n" + 
-				"	from (select a.*,b.storenum,b.discount,b.STOREID\r\n" + 
-				"	from airticket.flight a \r\n" + 
-				"			left join (select aa.*, bb.discount\r\n" + 
-				"						from airticket.ticketstore aa left join airticket.discount bb\r\n" + 
-				"						on aa.flightid=bb.flightid and aa.TICKETDATETIME=bb.DISCOUNTDATETIME) b\r\n" + 
-				"	on a.flightid=b.flightid \r\n" + 
-				"    where a.flightid in (select flightid from airticket.ticketstore where FROMCITY=? and TOCITY=? and TICKETDATETIME=?)\r\n" + 
-				"        and b.TICKETDATETIME=?) a left join airticket.dirctory b\r\n" + 
-				"    on a.dicid=b.dicid;";
-		
-		flights=jdbcOperator.queryForJavaBeanList(sql, Flight.class,fromCity,toCity,dateStr,dateStr);
-		
 		PageModel<Flight> pageModel=new PageModel<Flight>()	;
-		pageModel.setAllCount(flights.size());
+		
 		pageModel.setCurrentPage(currentPage);
 		pageModel.setPageSize(pageSize);
 		List<Flight> pageFlights=new ArrayList<Flight>();
-		for(int i=1+(currentPage-1)*pageSize;i<=pageSize+(currentPage-1)*pageSize;i++){
-			if (flights.size()<i) {
-				break;
+		
+		
+		List<Flight> flightids;
+		sql="select flightid from airticket.flight where FROMCITY=? and TOCITY=?";
+		flightids=jdbcOperator.queryForJavaBeanList(sql, Flight.class,fromCity,toCity);
+		
+		for (Flight flightid : flightids) {
+			sql="select aaaa.*,b.storenum,b.discount,b.STOREID\r\n" + 
+					"		from airticket.flight aaaa left join \r\n" + 
+					"										(\r\n" + 
+					"											select aa.*, bb.discount \r\n" + 
+					"											from airticket.ticketstore aa left join airticket.discount bb\r\n" + 
+					"											on aa.flightid=bb.flightid and aa.TICKETDATETIME=bb.DISCOUNTDATETIME\r\n" + 
+					"										) b \r\n" + 
+					"	on aaaa.flightid=b.flightid \r\n" + 
+					"	where aaaa.flightid =?\r\n" + 
+					"	and b.TICKETDATETIME=?";
+			flights=jdbcOperator.queryForJavaBeanList(sql, Flight.class,flightid.getFlightid(),dateStr);
+			
+			pageModel.setAllCount(pageModel.getAllCount()+flights.size());
+			for(int i=1+(currentPage-1)*pageSize;i<=pageSize+(currentPage-1)*pageSize;i++){
+				if (flights.size()<i) {
+					break;
+				}
+				Flight flight=flights.get(i-1);
+				if (flight.getDiscount()==0.0) {
+					flight.setDiscount(1.0);	
+				}
+				pageFlights.add(flight);
 			}
-			Flight flight=flights.get(i-1);
-			if (flight.getDiscount()==0.0) {
-				flight.setDiscount(1.0);	
-			}
-			pageFlights.add(flight);
+			
 		}
 		pageModel.setResult(pageFlights);
 		return pageModel;

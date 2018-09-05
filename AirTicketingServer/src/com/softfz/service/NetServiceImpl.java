@@ -173,7 +173,7 @@ public class NetServiceImpl extends UnicastRemoteObject implements INetService {
 			String flightno, int currentPage, int pageSize)
 			throws RemoteException {
 		// TODO Auto-generated method stub
-JdbcOperator jdbcOperator= new JdbcOperatorImpl(DataSourceConfig.getDataSource());
+		JdbcOperator jdbcOperator= new JdbcOperatorImpl(DataSourceConfig.getDataSource());
 		
 		List<SaleRecord> saleRecords=null;
 		
